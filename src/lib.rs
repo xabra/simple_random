@@ -10,46 +10,10 @@ pub struct SimpleRNG {
     c: u64,
 }
 
-pub struct SimpleRNGBuilder {
-    previous: u64,
-    m: u64,
-    a: u64,
-    c: u64,
-}
-impl SimpleRNGBuilder {
-    pub fn new() -> Self {
-        //! Create a new SimpleRNGBuilder with default parameters and default seed
-        SimpleRNGBuilder {
-            previous: 4_562_435, // The seed
-            a: 48_271,           // Multiplier
-            c: 0,                // Additive constant
-            m: 2_147_483_647,    // Moduluo parameter.  Equals 2^31-1  (also equals = MAX:i32)
-        }
-    }
-    pub fn with_seed(mut self, seed: u64) -> Self {
-        //! Set the seed of the new RNG
-        self.previous = seed;
-        self
-    }
-
-    pub fn with_params(mut self, a: u64, c: u64, m: u64) -> Self {
-        //! Set the params of the new RNG
-        self.a = a;
-        self.c = c;
-        self.m = m;
-        self
-    }
-    pub fn build(self) -> SimpleRNG {
-        SimpleRNG {
-            previous: self.previous,
-            m: self.m,
-            a: self.a,
-            c: self.c,
-        }
-    }
-}
-
 impl SimpleRNG {
+    pub fn builder() -> SimpleRNGBuilder {
+        SimpleRNGBuilder::new()
+    }
     pub fn random_u64(&mut self) -> u64 {
         //! Returns a pseudo random integer u64 from 0 to max_random.
         let new = (self.a * self.previous + self.c) % self.m;
@@ -96,6 +60,45 @@ impl SimpleRNG {
     }
 }
 
+pub struct SimpleRNGBuilder {
+    previous: u64,
+    m: u64,
+    a: u64,
+    c: u64,
+}
+impl SimpleRNGBuilder {
+    pub fn new() -> Self {
+        //! Create a new SimpleRNGBuilder with default parameters and default seed
+        SimpleRNGBuilder {
+            previous: 4_562_435, // The seed
+            a: 48_271,           // Multiplier
+            c: 0,                // Additive constant
+            m: 2_147_483_647,    // Moduluo parameter.  Equals 2^31-1  (also equals = MAX:i32)
+        }
+    }
+    pub fn with_seed(mut self, seed: u64) -> Self {
+        //! Set the seed of the new RNG
+        self.previous = seed;
+        self
+    }
+
+    pub fn with_params(mut self, a: u64, c: u64, m: u64) -> Self {
+        //! Set the params of the new RNG
+        self.a = a;
+        self.c = c;
+        self.m = m;
+        self
+    }
+    pub fn build(self) -> SimpleRNG {
+        SimpleRNG {
+            previous: self.previous,
+            m: self.m,
+            a: self.a,
+            c: self.c,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -104,7 +107,7 @@ mod tests {
     #[test]
     fn correctness() {
         //! Test of correctness from Park & Miller using particular parameters and seed = 1
-        let mut rng = SimpleRNGBuilder::new()
+        let mut rng = SimpleRNG::builder()
             .with_params(16_807, 0, 2_147_483_647)
             .with_seed(1)
             .build();
@@ -120,7 +123,7 @@ mod tests {
     #[test]
     fn bool_fraction() {
         //! Test of boolean random number
-        let mut rng = SimpleRNGBuilder::new().with_seed(19000).build();
+        let mut rng = SimpleRNG::builder().with_seed(19000).build();
         let probability_true = 0.6;
         let error = 0.05;
 
